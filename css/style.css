@@ -1,0 +1,28 @@
+body {
+    /* https://www.youtube.com/watch?v=yc2olxLgKLk */
+    /* FootBot: Sticking footer on bottom for short pages */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    /* /FootBot */
+}
+
+footer {
+    /* FootBot: Sticking footer on bottom for short pages */
+    margin-top: auto;
+    /* /FootBot */
+}
+
+a {
+    color: var(--bs-primary);
+    text-decoration: none;
+}
+
+#logo {
+    width: 100px;
+}
+
+/*.login-box {*/
+/*    border: 1px solid darkgray;*/
+/*    background-color: grey;*/
+/*}*/
