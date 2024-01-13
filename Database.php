@@ -18,157 +18,44 @@ class Database
         $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Checks if database can be reached and read
-     * @return bool TRUE if DB is reached and read, FALSE otherwise
-     */
-    public function healthCheck(): bool
+    public function checkUser(string $userEmail): bool
     {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT * FROM coding_technology');
-        $result = $stmt->execute();
-        return !($result == false);
+        $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT id FROM user WHERE email = :email;");
+        $stmt->execute(['email' => $userEmail]);
+
+        return $stmt->rowCount() == 1;
     }
 
-    /**
-     * Get names and IDs of all technologies
-     * @return array|false Array of technologies
-     */
-    public function getTechnologies(): array|false
+    public function getPassword(string $userEmail): string
     {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT id, name FROM coding_technology;');
-        $result = $stmt->execute();
+        $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT password FROM user WHERE email = :email;");
+        $result = $stmt->execute(['email' => $userEmail]);
 
         if (!$result) return false;
-        return $stmt->fetchAll();
+
+        return $stmt->fetch()['password'];
     }
 
-    /**
-     * Checks if database can be reached and read
-     * @param int $id ID of the technology
-     * @return array|false Associative array with the result. False on fail
-     */
-    public function getTechnology(int $id): array|false
+    public function createUser(string $fName, string $lName, string $email, string $password, DateTime $gdpr)
     {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT id, name, age, short_text, description, video_link, homepage, logo FROM coding_technology WHERE id=:id;');
-        $result = $stmt->execute(['id' => $id]);
-
-        if (!$result) return false;
-        return $stmt->fetch();
+        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'INSERT INTO user(first_name, last_name, email, password, gdpr) VALUE (:fName, :lName,:email,:password,:gdpr)');
+//        $stmt->bindValue('gdpr', strtotime(date('Y-m-d',$gdpr->getTimestamp())), PDO::PARAM_INT);
+        return $stmt->execute([
+            'fName' => $fName,
+            'lName' => $lName,
+            'email' => $email,
+            'password' => $password,
+            'gdpr' => date('Y-m-d', $gdpr->getTimestamp()),
+        ]);
     }
 
-    /**
-     * Get the PDF from the database for a specific technology
-     * @param int $id ID of the technology
-     * @return mixed The PDF in base64 encoded string or false if not found
-     */
-    public function getTechnologyPdf(int $id): mixed
+    public function getUser(string $email)
     {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT name, instructions FROM coding_technology WHERE id=:id;');
-        $result = $stmt->execute(['id' => $id]);
+        $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT * FROM user WHERE email = :email");
+        $result = $stmt->execute(['email' => $email]);
 
         if (!$result) return false;
 
         return $stmt->fetch();
-    }
-
-    /**
-     * Uploads a PDF associated with a technology to the DB
-     * @param string $file Base64 encoded file
-     * @return bool True if successful, false if not
-     */
-    public function uploadTechnologyPdf(int $id, string $file): bool
-    {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'UPDATE coding_technology SET instructions = :file WHERE id = :id');
-        return $stmt->execute(['id' => $id, 'file' => $file]);
-    }
-
-    /**
-     * Uploads a technology logo for a specific technology
-     * @param int $id ID of the technology
-     * @param string $file Base64 encoded string of the file
-     * @return bool Result of the upload
-     */
-    public function uploadTechnologyLogo(int $id, string $file): bool
-    {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'UPDATE coding_technology SET logo = :file WHERE id = :id');
-        return $stmt->execute(['id' => $id, 'file' => $file]);
-    }
-
-    /**
-     * Retrieves sessions for a certain technology
-     * @param int $id Technology ID
-     * @return bool|array Ordered array of sessions
-     */
-    public function getSessions(int $id): false|array
-    {
-        // CONCAT(duration, ' min') AS 'Duration',
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT DATE(start_time)                                                      AS \'Date\',
-       TIME_FORMAT(start_time, \'%H:%i\')                                      AS \'Start\',
-       TIME_FORMAT(ADDTIME(start_time, SEC_TO_TIME(duration * 60)), \'%H:%i\') as \'End\',
-       room                                                                  AS \'Room\'
-FROM sessions
-WHERE technology_id = :id
-GROUP BY start_time
-ORDER BY start_time;');
-        $result = $stmt->execute(['id' => $id]);
-
-        if (!$result) return false;
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Get images for technology
-     * @param int $id ID of the technology
-     * @return false|array Array of base64 encoded images
-     */
-    public function getTechnologyImages(int $id): false|array
-    {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT i.image_data as image_data, i.alt as alt FROM coding_technology_images cti JOIN images i on i.id = cti.image_id WHERE cti.technology_id = :id;');
-        $result = $stmt->execute(['id' => $id]);
-
-        if (!$result) return false;
-
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Upload images for technology
-     * @param int $id ID of the technology
-     * @param array $images Array of base64 encoded image files
-     * @return bool Returns true if operation was successful, false otherwise
-     */
-    public function uploadTechnologyImages(int $id, array $images): bool
-    {
-        foreach ($images as $image) {
-            $stmt = $this->pdo->prepare(/** @lang MySQL */ 'INSERT INTO images(image_data) VALUE (:image);');
-            $stmt->execute(['image' => $image]);
-            $lastId = $this->pdo->lastInsertId();
-            $stmt = $this->pdo->prepare(/** @lang MySQL */ 'INSERT INTO coding_technology_images(technology_id, image_id) VALUE (:tech_id, :img_id);');
-            $stmt->execute(['tech_id' => $id, 'img_id' => $lastId]);
-        }
-
-        return true;
-    }
-
-    /**
-     * Gets the FAQ page question and answers
-     * @return array|false Array of questions and answers
-     */
-    public function getQA(): array|false
-    {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT question, answer FROM faq;');
-        $result = $stmt->execute();
-
-        if (!$result) return false;
-        return $stmt->fetchAll();
-    }
-
-    public function getHPTechnologies(): array|false
-    {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT id, name, short_text, logo FROM coding_technology;');
-        $result = $stmt->execute();
-
-        if (!$result) return false;
-        return $stmt->fetchAll();
     }
 }

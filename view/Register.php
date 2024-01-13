@@ -159,12 +159,38 @@ $counties = [
         ),
     ),
 ];
+
+/**
+ * @param string $fieldName Name of the input
+ * @return string If field is valid, returns nothing if field is invalid returns the BS 'is-invalid' class
+ */
+function is_invalid(string $fieldName): string
+{
+    $invalid = [];
+    if (isset($_SESSION['invalid']))
+        $invalid = $_SESSION['invalid'];
+//    $invalid = ['email' => 'Not an email'];
+
+    return in_array($fieldName, array_keys($invalid)) ? 'is-invalid' : '';
+}
+
+function get_invalid_message(string $fieldName): string
+{
+    $message = '';
+    if (isset($_SESSION['invalid'][$fieldName])) {
+        $message = $_SESSION['invalid'][$fieldName];
+        unset($_SESSION['invalid'][$fieldName]);
+    }
+
+    return $message;
+}
+
 ?>
 
 <h1 class="text-center my-5">Register</h1>
 <div class="col-12 col-lg-10 mx-auto">
     <!--suppress HtmlUnknownTarget -->
-    <form class="container-fluid" action="controller/account.php?action=register" method="post">
+    <form class="container-fluid" action="controller/account.php?action=register" method="post" novalidate>
         <?php if ($displayMessage): ?>
             <div class="alert alert-info d-flex align-items-center" role="alert">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" fill="currentColor"
@@ -182,42 +208,95 @@ $counties = [
         <div class="row g-md-3">
             <div class="col-12 col-md-6">
                 <div class="form-floating mb-3">
-                    <input class="form-control" type="text" name="firstName" id="firstName" placeholder="Name" required>
+                    <input
+                      class="form-control <?= is_invalid('firstName') ?>"
+                      type="text"
+                      name="firstName"
+                      id="firstName"
+                      placeholder="Name"
+                      data-fk-keep="register"
+                      required
+                    >
                     <label class="form-label" for="firstName">First name</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('firstName') ?>
+                    </div>
                 </div>
             </div>
             <div class="col-12 col-md-6">
                 <div class="form-floating mb-3">
-                    <input class="form-control" type="text" name="lastName" id="lastName" placeholder="Surname"
-                           required>
+                    <input
+                      class="form-control <?= is_invalid('lastName') ?>"
+                      type="text"
+                      name="lastName"
+                      id="lastName"
+                      placeholder="Surname"
+                      data-fk-keep="register"
+                      required
+                    >
                     <label class="form-label" for="lastName">Last name</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('lastName') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="email" name="email" id="email" class="form-control" placeholder="name@domain.com"
-                           required value="<?= $email; ?>">
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      class="form-control <?= is_invalid('email') ?>"
+                      placeholder="name@domain.com"
+                      value="<?= htmlspecialchars($email, ENT_QUOTES); ?>"
+                      data-fk-keep="register"
+                      required
+                    >
                     <label for="email" class="form-label">Email address</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('email') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="password" name="password" id="password" class="form-control"
-                           placeholder="Password123*" value="<?= $password; ?>" autocomplete="new-password">
+                    <input
+                      type="password"
+                      name="password"
+                      id="password"
+                      class="form-control <?= is_invalid('password') ?>"
+                      placeholder="Password123*"
+                      value="<?= $password; ?>"
+                      autocomplete="new-password"
+                      required
+                    >
                     <label for="password" class="form-label">Password</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('password') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="password" name="passwordRepeat" id="passwordRepeat" class="form-control"
-                           placeholder="Password123*" autocomplete="repeat-password">
+                    <input
+                      type="password"
+                      name="passwordRepeat"
+                      id="passwordRepeat"
+                      class="form-control <?= is_invalid('passwordRepeat') ?>"
+                      placeholder="Password123*"
+                      autocomplete="repeat-password"
+                      required
+                    >
                     <label for="passwordRepeat" class="form-label">Repeat password</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('passwordRepeat') ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -225,64 +304,130 @@ $counties = [
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="text" name="addressLine1" id="addressLine1" placeholder="Address 1"
-                           class="form-control" required>
+                    <input
+                      type="text"
+                      name="addressLine1"
+                      id="addressLine1"
+                      placeholder="Address 1"
+                      class="form-control <?= is_invalid('addressLine1') ?>"
+                      data-fk-keep="register"
+                      required
+                    >
                     <label for="addressLine1" class="form-label">Address Line 1</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('addressLine1') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="text" name="addressLine1" id="addressLine2" placeholder="Address 2"
-                           class="form-control">
-                    <label for="addressLine2" class="form-label">Address Line 2</label>
+                    <input
+                      type="text"
+                      name="addressLine2"
+                      id="addressLine2"
+                      placeholder="Address 2"
+                      class="form-control <?= is_invalid('addressLine2') ?>"
+                      data-fk-keep="register"
+                    >
+                    <label for="addressLine2" class="form-label">Address Line 2 <span class="text-body-tertiary">&boxh; Optional</span></label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('addressLine2') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="text" name="city" id="city" placeholder="City" class="form-control" required>
+                    <input
+                      type="text"
+                      name="city"
+                      id="city"
+                      placeholder="City"
+                      class="form-control <?= is_invalid('city') ?>"
+                      data-fk-keep="register"
+                      required
+                    >
                     <label for="city" class="form-label">City</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('city') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row g-md-3">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <select class="form-select" name="county" id="county"></select>
+                    <select
+                      class="form-select <?= is_invalid('county') ?>"
+                      name="county"
+                      id="county"
+                      data-fk-keep="register"
+                      required
+                    ></select>
                     <label for="county">County</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('county') ?>
+                    </div>
                 </div>
             </div>
             <div class="col col-12 col-md-4">
                 <div class="form-floating mb-3">
-                    <input type="text" name="postalCode" id="postalCode" placeholder="Eircode" class="form-control"
-                           required>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      id="postalCode"
+                      placeholder="Eircode"
+                      class="form-control <?= is_invalid('postalCode') ?>"
+                      data-fk-keep="register"
+                      required
+                    >
                     <label for="postalCode" class="form-label">Éircode/Postcode</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('postalCode') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <select class="form-select" required id="country" name="country" onchange="changeCounties()">
-                        <optgroup label="Country">
-                            <option value="ie" selected>Republic of Ireland</option>
-                            <option value="uk">United Kingdom</option>
-                        </optgroup>
+                    <select
+                      class="form-select <?= is_invalid('country') ?>"
+                      id="country"
+                      name="country"
+                      onchange="changeCounties()"
+                      data-fk-keep="register"
+                      required
+                    >
+                        <option value="ie" selected>Republic of Ireland</option>
+                        <option value="uk">United Kingdom</option>
                     </select>
                     <label for="country">Country</label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('country') ?>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col d-flex justify-content-center">
                 <div class="form-check mb-3">
-                    <input type="checkbox" name="gdpr" id="gdpr" class="form-check-input" required>
+                    <input
+                      type="checkbox"
+                      name="gdpr"
+                      id="gdpr"
+                      class="form-check-input <?= is_invalid('gdpr') ?>"
+                      required
+                    >
                     <label for="gdpr" class="form-check-label">
                         I have read and agree to the <a href="?p=download&docid=1" target="_blank">Privacy policy</a>
                     </label>
+                    <div class="invalid-feedback">
+                        <?= get_invalid_message('gdpr') ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -304,22 +449,24 @@ $counties = [
     </form>
 </div>
 <datalist id="ie-counties">
-    <?php foreach ($counties['ie'] as $county): ?>
-        <option value="<?= $county['code'] ?>"><?= $county['name'] ?></option>
-    <?php endforeach; ?>
+    <option value="" selected disabled></option>
+    <?php foreach ($counties['ie'] as $county) {
+        // echo "<option value='$county[code]'>$county[name]</option>";
+        echo "<option>$county[name]</option>";
+    }
+    ?>
 </datalist>
 <datalist id="uk-counties">
+    <option value="" selected disabled></option>
     <?php
     foreach ($counties['uk'] as $country => $ukCounties) {
         echo "<optgroup label=\"$country\">";
         foreach ($ukCounties as $county) {
-            ?>
-            <option value="<?= $county['code'] ?>"><?= $county['name'] ?></option>
-            <?php
+            // echo "<option value='$county[code]'>$county[name]</option>";
+            echo "<option>$county[name]</option>";
         }
         echo '</optgroup>';
     }
-
     ?>
 </datalist>
 

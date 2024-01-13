@@ -1,13 +1,27 @@
 <?php
 global $action;
-$links = [
+
+$loggedOutItems = [
+    ['type' => 'empty', 'width' => 25],
     ['type' => 'link', 'href' => '?', 'title' => 'Home'],
-    ['type' => 'link', 'href' => '?p=products', 'title' => 'Products'],
+    ['type' => 'empty', 'width' => 25],
     ['type' => 'logo', 'href' => '?', 'source' => '../images/logo/logo.png'],
     ['type' => 'link', 'href' => '?p=login', 'title' => 'Login'],
-    ['type' => 'link', 'href' => '?p=register', 'title' => 'Register']
+    ['type' => 'link', 'href' => '?p=register', 'title' => 'Register'],
+];
+
+$loggedInItems = [
+    ['type' => 'empty', 'width' => 10],
+    ['type' => 'link', 'href' => '?p=products', 'title' => 'Products'],
+    ['type' => 'empty', 'width' => 10],
+    ['type' => 'logo', 'href' => '?', 'source' => '../images/logo/logo.png'],
+    ['type' => 'component', 'name' => 'userDropdown.php'],
+    ['type' => 'component', 'name' => 'basket.php']
 ];
 //    ['type' => 'empty', 'width' => 50],
+
+$navItems = isset($_SESSION['user']) ? $loggedInItems : $loggedOutItems;
+//$navItems = $loggedInItems;
 ?>
 <header class="sticky-top py-1 bg-body">
     <div class="container-fluid ">
@@ -26,9 +40,9 @@ $links = [
                         aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div id="navbarContent" class="collapse navbar-collapse justify-content-center">
+                <div id="navbarContent" class="collapse navbar-collapse justify-content-center navbar-nav">
                     <?php
-                    foreach ($links as $item) {
+                    foreach ($navItems as $item) {
                         switch ($item['type']) {
                             case 'link':
                                 ?>
@@ -51,8 +65,11 @@ $links = [
                                 break;
                             case 'empty':
                                 ?>
-                                <div style="width: <?= $item['width'] ?>px"></div>
+                                <div class="nav-item mx-4" style="width: <?= $item['width'] ?>px"></div>
                                 <?php
+                                break;
+                            case 'component':
+                                include 'components/' . $item['name'];
                                 break;
                             default:
                                 continue 2;

@@ -10,8 +10,18 @@ function is_invalid(string $fieldName): string
         $invalid = $_SESSION['invalid'];
 //    $invalid = ['email' => 'Not an email'];
 
-    unset($_SESSION['invalid'][$fieldName]);
     return in_array($fieldName, array_keys($invalid)) ? 'is-invalid' : '';
+}
+
+function get_invalid_message(string $fieldName): string
+{
+    $message = '';
+    if (isset($_SESSION['invalid'][$fieldName])) {
+        $message = $_SESSION['invalid'][$fieldName];
+        unset($_SESSION['invalid'][$fieldName]);
+    }
+
+    return $message;
 }
 
 ?>
@@ -30,10 +40,11 @@ function is_invalid(string $fieldName): string
                       class="form-control <?= is_invalid('email'); ?>"
                       placeholder="name@domain.com"
                       autocomplete="username"
+                      data-fk-keep="login"
                     >
                     <label for="email" class="form-label">Email address</label>
                     <div class="invalid-feedback">
-                        Please enter a valid email address
+                        <?= get_invalid_message('email') ?>
                     </div>
                 </div>
             </div>
@@ -47,19 +58,26 @@ function is_invalid(string $fieldName): string
                       id="password"
                       class="form-control <?= is_invalid('password'); ?>"
                       placeholder="Password123*"
+                        <?php // Cannot be required for the register button to work ?>
                     >
                     <label for="password" class="form-label">Password</label>
                     <div class="invalid-feedback">
-                        Please enter a password
+                        <?= get_invalid_message('password') ?>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col d-flex justify-content-center">
-                <div class="form-check mb-3">
-                    <input type="checkbox" name="rememberLogin" id="rememberLogin" class="form-check-input"
-                           value="true">
+                <div class="form-check form-switch mb-3">
+                    <input
+                      type="checkbox"
+                      name="rememberLogin"
+                      id="rememberLogin"
+                      class="form-check-input"
+                      value="true"
+                      checked
+                    >
                     <label for="rememberLogin" class="form-check-label">Remember me</label>
                 </div>
             </div>

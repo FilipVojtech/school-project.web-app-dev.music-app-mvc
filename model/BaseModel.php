@@ -40,8 +40,8 @@ abstract class BaseModel implements IBaseModel, Stringable
     public function getModelSpecificHeadContent(): string
     {
         $value = "";
-        foreach ($this->headContent ?? [] as $item) {
-            $value .= "    $item\n";
+        foreach ($this->headContent ?? [] as $tag) {
+            $value .= "$tag\n";
         }
         return $value;
     }

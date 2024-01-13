@@ -38,6 +38,8 @@ class HeadTag implements \Stringable
             $value .= "</$this->name>";
         }
 
+        $value .= "</$this->name>";
+
         return $value;
     }
 
