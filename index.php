@@ -77,6 +77,18 @@ switch ($action) {
       crossorigin="anonymous"
     ></script>
     <!--</editor-fold>-->
+    <link
+      rel="icon"
+      href="images/favicon/clef-light.png"
+      type="image/png"
+      media="(prefers-color-scheme: light)"
+    >
+    <link
+      rel="icon"
+      href="images/favicon/clef-dark.png"
+      type="image/png"
+      media="(prefers-color-scheme: dark)"
+    >
     <link rel="stylesheet" href="/css/style.css">
     <title><?= $model->title ?></title>
     <?= $model->getModelSpecificHeadContent(); ?>
