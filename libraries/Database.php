@@ -1,5 +1,4 @@
 <?php
-
 class Database
 {
     private string $host = "bmyjigjmtjn6nwu6kuvi-mysql.services.clever-cloud.com";
@@ -57,5 +56,15 @@ class Database
         if (!$result) return false;
 
         return $stmt->fetch();
+    }
+
+    public function getProducts(): array|false
+    {
+        $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT id, title, price, unit, category, short_text FROM product");
+        $result = $stmt->execute();
+
+        if (!$result) return false;
+
+        return $stmt->fetchAll();
     }
 }
