@@ -9,6 +9,7 @@ include_once 'HTML/HeadTag.php';
 include_once 'model/HomeModel.php';
 include_once 'model/NotFoundModel.php';
 include_once 'model/ProductsModel.php';
+include_once 'model/ProductModel.php';
 include_once 'model/LoginModel.php';
 include_once 'model/RegisterModel.php';
 include_once 'model/BasketModel.php';

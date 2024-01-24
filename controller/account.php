@@ -188,6 +188,7 @@ function logout(): void
     session_unset();
     session_destroy();
     $_SESSION = array();
+    header('Location: ../?p=' . ($_GET['burl'] ?? ''));
 }
 
 function goto_login(): void
@@ -195,5 +196,3 @@ function goto_login(): void
     header('Location: ../?p=login');
     die();
 }
-
-

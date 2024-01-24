@@ -1,4 +1,5 @@
 <?php
+global $action;
 /**
  * @param string $fieldName Name of the input
  * @return string If field is valid, returns nothing if field is invalid returns the BS 'is-invalid' class

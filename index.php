@@ -18,6 +18,8 @@ if (!empty($_SESSION['ui-message'])) {
 
 $isLoggedIn = isset($_SESSION['user']);
 
+$db = new Database();
+
 $model = null;
 switch ($action) {
     case '':
@@ -33,7 +35,35 @@ switch ($action) {
             header('Location: ?');
             die;
         }
-        $model = new ProductsModel("Products");
+        $category = 0;
+        if (isset($_GET['category'])) {
+            $category = $_GET['category'];
+        }
+
+        $model = new ProductsModel("Products", $db->getProducts($category), $db->getCategories(), $category);
+        break;
+    case 'product':
+        $productId = null;
+        if (isset($_GET['id'])) {
+            $productId = $_GET['id'];
+        }
+        $product = $db->getProduct($productId);
+
+        if (!$product) {
+            header('Location: ?p=notFound');
+            die;
+        }
+
+        $model = new ProductModel(
+            $product['title'],
+            $product['title'],
+            $product['price'],
+            $product['unit'],
+            $product['stock'],
+            $product['category'],
+            $product['category_id'],
+            $product['product_detail']
+        );
         break;
     case 'basket':
         if (!$isLoggedIn) {
@@ -49,6 +79,9 @@ switch ($action) {
     case 'register':
         $model = new RegisterModel('Register');
         $model->headContent[] = new \HTML\HeadTag('script', '', ['src' => 'javascript/formKeeper.js', 'defer' => '']);
+        break;
+    case 'notFound':
+        $model = new NotFoundModel("Page not found");
         break;
 }
 ?>
@@ -89,14 +122,38 @@ switch ($action) {
       type="image/png"
       media="(prefers-color-scheme: dark)"
     >
+    <script src="javascript/ShoppingBasket.js" defer></script>
     <link rel="stylesheet" href="/css/style.css">
     <title><?= $model->title ?></title>
     <?= $model->getModelSpecificHeadContent(); ?>
 </head>
 <body>
 <!--<div style="outline: 1px solid red; position: absolute; height: 100vh; left: 50%; transform: translateX(-50%); z-index: 100000"></div>-->
-<?php
-include 'view_partial/Header.php'; ?>
+<!--<editor-fold desc="Basket modal">-->
+<div
+  class="modal fade"
+  id="basketModal"
+  tabindex="-1"
+  aria-labelledby="basketLabel"
+  aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="basketLabel">Basket</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul id="basketItemsPlaceholder" class="list-group list-group-flush"></ul>
+            </div>
+            <div class="modal-footer">
+                <a href="#" type="button" class="btn btn-primary">Reserve items</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!--</editor-fold>-->
+<?php include 'view_partial/Header.php'; ?>
 <main class="col-12 col-xl-6 col-lg-8 col-md-10 mx-auto">
     <?php if ($uiMessage): ?>
         <div class="alert alert-info" role="alert">
@@ -105,8 +162,6 @@ include 'view_partial/Header.php'; ?>
     <?php endif; ?>
     <?= $model; ?>
 </main>
-<?php
-include 'view_partial/Footer.php';
-?>
+<?php include 'view_partial/Footer.php'; ?>
 </body>
 </html>

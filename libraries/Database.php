@@ -1,4 +1,5 @@
 <?php
+
 class Database
 {
     private string $host = "bmyjigjmtjn6nwu6kuvi-mysql.services.clever-cloud.com";
@@ -58,13 +59,49 @@ class Database
         return $stmt->fetch();
     }
 
-    public function getProducts(): array|false
+    public function getProducts(int $category = 0): array|false
     {
-        $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT id, title, price, unit, category, short_text FROM product");
-        $result = $stmt->execute();
+        $stmt = null;
+        $result = null;
+        if ($category == 0) {
+            $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT id, title, price, unit, category, short_text FROM product WHERE available = TRUE");
+            $result = $stmt->execute();
+        } else {
+            $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT id, title, price, unit, category, short_text FROM product WHERE category = :category AND available = TRUE");
+            $result = $stmt->execute(['category' => $category]);
+        }
 
         if (!$result) return false;
 
+        return $stmt->fetchAll();
+    }
+
+    public function getProduct(int $productId)
+    {
+        $stmt = $this->pdo->prepare(/** @lang MySQL */ "SELECT p.id             AS product_id,
+       p.title          AS title,
+       p.price          AS price,
+       p.unit           AS unit,
+       p.stock          AS stock,
+       p.category       AS category_id,
+       p.product_detail AS product_detail,
+       c.name           AS category
+FROM product p
+         JOIN category c ON c.id = p.category
+WHERE p.id = :id;");
+        $result = $stmt->execute(['id' => $productId]);
+
+        if ($stmt->rowCount() == 1)
+            return $stmt->fetch();
+        else
+            return false;
+    }
+
+    public function getCategories()
+    {
+        $stmt = $this->pdo->prepare(/** @lang MySQL */ 'SELECT * FROM category;');
+        $result = $stmt->execute();
+        if (!$result) return false;
         return $stmt->fetchAll();
     }
 }

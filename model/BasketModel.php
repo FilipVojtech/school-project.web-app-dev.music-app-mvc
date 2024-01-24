@@ -1,12 +1,11 @@
 <?php
 include_once "BaseModel.php";
 
-class NotFoundModel extends BaseModel
+class BasketModel extends BaseModel
 {
     public function __construct(string $title)
     {
-        $path = 'view/NotFound.php';
-
+        $path = 'view/Basket.php';
         parent::__construct($title, $path);
     }
 
